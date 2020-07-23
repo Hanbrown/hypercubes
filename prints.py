@@ -74,35 +74,36 @@ for each line in file, i++
 def is_valid(col, f, n):
     f.seek(6) # Set file pointer to first line of adjacency matrix
     for i in range(n):
-        adj = f.readline().split(" ")
-        for j in range(n):
-            if adj[j] == "1" and col[i] == col[j]:
+        copy = col # Necessary for nested loop
+        adj = f.readline().split(" ") # Read each row of the adjacency matrix
+        digitI = col // (pow(10, n - i - 1)) # Read color from left to right
+
+        for j in range(n-i):
+            digitJ = copy % 10 # Read color from right to left
+            if adj[n-j-1].rstrip("\n") == "1" and digitI == digitJ:
                 return False
+            copy = copy // 10
+
+        col = col % (pow(10, n - i - 1))
+
     return True
 
-def increment(color, k, n):
-    col = list(color)
-    finalCol = ""
+def increment(col, inc, k):
+    if inc == 0:
+        return col
 
-    digit = int(col[n - 1])
-    digit += 1
-    col[n - 1] = str(digit)
+    digit = col % 10 # = 2
+    digit += inc # = 3
 
-    for i in range(n - 1):
-        if int(col[n - i - 1]) > k - 1:
-            col[n - i - 1] = 0
-            digit = int(col[n - i - 2])
-            digit += 1
-            col[n - i - 2] = str(digit)
-        else:
-            for j in range(n):
-                finalCol += str(col[j])
-            return finalCol
+    inc = int( digit / k )
+    col = int( col / 10 )
 
-    for j in range(n):
-        finalCol += str(col[j])
+    col = increment(col, inc, k)
 
-    return finalCol
+    col *= 10
+    col += digit % k
+
+    return col
 
 def getColors(f, n, k):
     col = ""
@@ -128,8 +129,12 @@ f = open("samplegraph.txt", "r")
 n = int(f.readline())
 k = int(f.readline())
 
-colors = getColors(f, n, k)
-print(colors)
-print(len(colors))
+print(is_valid(101, f, n))
+
+#colors = getColors(f, n, k)
+#print(colors)
+#print(len(colors))
+
+#print( increment(0, 1, 3) )
 
 f.close()
