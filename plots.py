@@ -65,14 +65,10 @@ def getColors(f, n, k):
     maxCol = int(maxCol)
 
     # check if col is valid coloring of graph. Add to list if it is, then increment col and repeat
-    while col < maxCol:
+    while col <= maxCol:
         if is_valid(col, f, n):
             colors.append(col)
         col = increment(col, 1, k)
-
-    # special case -- check if maxCol is a valid coloring. Keeping it in the loop caused an infinite loop
-    if is_valid(maxCol, f, n):
-        colors.append(maxCol)
 
     return colors
 
