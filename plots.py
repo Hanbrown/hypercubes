@@ -20,57 +20,42 @@ def is_adjacent(n, k, v1, v2):
     return True
 
 # return whether a coloring col is a proper (valid) coloring of the graph in file f
-def is_valid(col, f, n):
-    f.seek(6) # Set file pointer to first line of adjacency matrix
+def is_valid(col, adj, n, k):
+    # f.seek(6) # Set file pointer to first line of adjacency matrix
     for i in range(n):
-        copy = col # Necessary for nested loop
-        adj = f.readline().split(" ") # Read each row of the adjacency matrix
-        digitI = col // (pow(10, n - i - 1)) # Read color from left to right
 
-        for j in range(n-i): # We read color rtl here so we don't read over characters we already read
-            digitJ = copy % 10 # Read color from right to left
-            if adj[n-j-1].rstrip("\n") == "1" and digitI == digitJ: # If 2 adjacent vertices have equal colorings
+        copy = col  # Necessary for nested loop
+
+        digitI = col // (pow(k, n - i - 1))  # Read color from left to right
+        for j in range(n-i):  # We read color rtl here so we don't read over characters we already read
+            digitJ = copy % k  # Read color from right to left
+            if adj[i][j] == 1 and digitI == digitJ:  # If 2 adjacent vertices have equal colorings
                 return False
-            copy = copy // 10
 
-        col = col % (pow(10, n - i - 1))
+            copy = copy // k
+
+        col = col % (pow(k, n - i - 1))
 
     return True
 
-def increment(col, inc, k):
-    if inc == 0:
-        return col
-
-    digit = col % 10 # = 2
-    digit += inc # = 3
-
-    inc = digit // k
-    col = col // 10
-
-    col = increment(col, inc, k)
-
-    col *= 10
-    col += digit % k
-
-    return col
-
-def getColors(f, n, k):
+# return an array of proper colorings of the graph base
+def getColors(base, n, k):
     col = 0
-    maxCol = ""
+    maxCol = pow(k, n) - 1
     colors = []
 
-    # set max to be k-1 repeated n times, e.g. k=3, n=4, max = 2222
-    for j in range(n):
-        maxCol += str(k-1)
-    maxCol = int(maxCol)
-
-    # check if col is valid coloring of graph. Add to list if it is, then increment col and repeat
+    # check if col is valid coloring of base graph. Add to list if it is, then increment col and repeat
     while col <= maxCol:
-        if is_valid(col, f, n):
+        if is_valid(col, base, n, k):
             colors.append(col)
-        col = increment(col, 1, k)
+        col += 1
 
     return colors
+
+# TODO use brute-force to find faces in the graphs
+# def shadeFaces(g): # g is the graph whose faces we want to shade
+#
+#     return
 
 # *********************************************************************************** #
 # *****                           Main Program                               ******** #
@@ -78,38 +63,35 @@ def getColors(f, n, k):
 f = open("samplegraph.txt", "r")
 
 # generate base graph
-
 bg = net.Network()
 n = int(f.readline())  # first line states number of vertices of base graph
-k = int(f.readline())  # second line states number of colors (7/16/2020)
+k = int(f.readline())  # second line states number of colors
+matrix = []
 
-# generate base graph
+# generate base graph and adjacency matrix
 for i in range(n):
     bg.add_node(i)
     neighbors = f.readline().split(" ")  # read a line of the adjacency matrix
+    matrix.append([])
     for j in range(i):
         if int(neighbors[j]) > 0:
             bg.add_edge(i, j)
-
             print(bg.num_edges())
+
+    # Add the current number to an adjacency matrix
+    for j in range(n):
+        matrix[i].append( int(neighbors[j]) )
+
+f.close()
 bg.show_buttons(filter_=['physics'])
 bg.show("samplegraphvis.html")
 
 # generate coloring graph
 cg = net.Network()
-colorings = []
-coloringsBase = getColors(f, n, k)
+colorings = getColors(matrix, n, k)  # ************** getColors function call ******************* #
 
-for coloring in coloringsBase:  # add each coloring to a list and as a node in cg
-    copy = coloring # used for the loop
-    val = 0
-    for i in range(n):
-        digitI = copy // pow(10, n-i-1)
-        val += digitI * pow(k, n - i - 1)  # understand this!
-        copy = copy % pow(10, n-i-1)
-    colorings.append(val)
-    cg.add_node(val)
-
+for coloring in colorings:  # add each coloring as a node in cg
+    cg.add_node(coloring)
 
 nk = len(colorings)
 for i in range(nk):  # generate edges between colorings by brute force
@@ -119,4 +101,3 @@ for i in range(nk):  # generate edges between colorings by brute force
 
 cg.show("samplecolgraphvis.html")
 
-f.close()

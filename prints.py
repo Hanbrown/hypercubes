@@ -76,15 +76,15 @@ def is_valid(col, f, n):
     for i in range(n):
         copy = col # Necessary for nested loop
         adj = f.readline().split(" ") # Read each row of the adjacency matrix
-        digitI = col // (pow(10, n - i - 1)) # Read color from left to right
+        digitI = col // (pow(3, n - i - 1)) # Read color from left to right
 
         for j in range(n-i):
-            digitJ = copy % 10 # Read color from right to left
+            digitJ = copy % 3 # Read color from right to left
             if adj[n-j-1].rstrip("\n") == "1" and digitI == digitJ:
                 return False
-            copy = copy // 10
+            copy = copy // 3
 
-        col = col % (pow(10, n - i - 1))
+        col = col % (pow(3, n - i - 1))
 
     return True
 
@@ -106,21 +106,14 @@ def increment(col, inc, k):
     return col
 
 def getColors(f, n, k):
-    col = ""
-    maxCol = ""
+    col = 0
+    maxCol = pow(k, n) - 1
     colors = []
 
-    for i in range(n):
-        col += "0"
-
-    for j in range(n):
-        maxCol += str(k-1)
-    maxCol = int(maxCol)
-
-    while int(col) <= maxCol:
+    while col <= maxCol:
         if is_valid(col, f, n):
             colors.append(col)
-        col = increment(col, k, n)
+        col += 1
 
     return colors
 
@@ -129,11 +122,11 @@ f = open("samplegraph.txt", "r")
 n = int(f.readline())
 k = int(f.readline())
 
-print(is_valid(101, f, n))
+#print(is_valid(101, f, n))
 
-#colors = getColors(f, n, k)
-#print(colors)
-#print(len(colors))
+colors = getColors(f, n, k)
+print(colors)
+print(len(colors))
 
 #print( increment(0, 1, 3) )
 
