@@ -27,9 +27,9 @@ def is_valid(col, adj, n, k):
         copy = col  # Necessary for nested loop
 
         digitI = col // (pow(k, n - i - 1))  # Read color from left to right
-        for j in range(n-i):  # We read color rtl here so we don't read over characters we already read
-            digitJ = copy % k  # Read color from right to left
-            if adj[i][j] == 1 and digitI == digitJ:  # If 2 adjacent vertices have equal colorings
+        for j in range(n-i):
+            digitJ = copy % k  # We read color rtl
+            if adj[i][n-j-1] == 1 and digitI == digitJ:  # If 2 adjacent verts have equal colorings. n-1 b/c of rtl
                 return False
 
             copy = copy // k
