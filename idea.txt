@@ -1,0 +1,82 @@
+Commuting generators
+
+They change only one vertex 			=> difference is a multiple of a power of 3
+The trace of one is not in support of other 	=> the power of 3 that G changes is not adjacent to the trace of H
+
+We figure out adjacency from the matrix -- (n - [the power of 3]) is the column, and the index of the trace of H is the row. If this matrix element is 0, then the generators commute
+
+Write pseudocode for this
+
+Generator for 0 will only commute with generator for 2
+Generator for 1 will only commute with generator for 2
+
+
+traceF = (edgeF_val / 3) until a non-k constant is reached. a is the number of iterations
+traceG = (edgeG_val / 3) until a non-k constant is reached. a is the number of iterations
+traceA= (edgeA_val / 3) until...
+
+do for every vertex in the coloring graph
+for edge in adjacent_edges:
+	traceA = power(edge_val, k) //power() finds the power of k that edge_val is a multiple of
+	
+	for trace in commuters:
+		commutes = matrix[traceA][trace] == 0
+		if commutes, then there is an n-cube here (as we iterate up, n becomes bigger
+
+	add traceA to commuters
+shade cube if necessary
+==========================================================================================
+maximal set of independent vertices
+
+1	0
+3	2
+4
+
+g0 and g2 commute (0 is not adjacent to 2)
+g1, g3, and g4 commute with each other (1 is neither adjacent to 3 nor 4)
+
+Take vertex 62 in coloring graph. These are the edge values and the corresponding traces:
+
+62-35 = 27 = 	3^3
+62-59 = 3 = 	3^1
+62-61 = 1 = 	3^0
+71-62 = 9 = 	3^2
+143-62 = 81 = 	3^4
+
+Here, we have all 5 generators. This vertex lives in a 2-cube and a 3-cube
+	--How do we find out that a set of commuting generators exists within another set of generators?
+
+vertices 61, 35, and 59 all comprise a 3-cube. //Use differences to find the other 3 vertices instead of adjacency
+	1. 59
+		62-59 = 3
+		check if 61-3 and 35-3 both exist in the coloring graph
+			if so, then excellent. 
+	2. 35
+		62-35 = 27
+		check if 61-27 and 59-27 both exist in the coloring graph
+			if so, then excellent.
+	3. 61
+		62-61 = 1
+		check if 59-1 and 35-1 both exist in the coloring graph
+			if so, the excellent.
+	If we have made it this far, we know that all the 8 vertices needed for this 3-cube exist in the graph. We can shade these vertices as needed.
+
+vertices 71 and 143 comprise a 2-cube
+	find a vertex that is adjacent to both 71 and 143
+	
+
+for v1 in colgraph:
+	adjC[] = list of adjacent vertices (how to get this?)
+	//diffs[] = list of vertex differences
+	cubeExists = true
+	
+	for v2 in adjC:
+		vB = math.log(v1-v2, k) //Logarithm with base k will return the index of the changed vertex
+		//adjB.add(vB)
+		diff = v1 - v2
+		for v3 in adjC (except v2):
+			if !exists(v3-diff, colgraph): //If this vertex (does not) exists in the coloring graph. Basically binary search
+				cubeExists = false
+			adjC.append(v3-diff)
+	if cubeExists: shadeCube(adjC)
+		
