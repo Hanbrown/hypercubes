@@ -71,39 +71,23 @@ for each line in file, i++
 
 """
 
-def is_valid(col, f, n):
-    f.seek(6) # Set file pointer to first line of adjacency matrix
+def is_valid(col, adj, n, k):
+    # f.seek(6) # Set file pointer to first line of adjacency matrix
     for i in range(n):
-        copy = col # Necessary for nested loop
-        adj = f.readline().split(" ") # Read each row of the adjacency matrix
-        digitI = col // (pow(3, n - i - 1)) # Read color from left to right
 
+        copy = col  # Necessary for nested loop
+
+        digitI = col // (pow(k, n - i - 1))  # Read color from left to right
         for j in range(n-i):
-            digitJ = copy % 3 # Read color from right to left
-            if adj[n-j-1].rstrip("\n") == "1" and digitI == digitJ:
+            digitJ = copy % k  # We read color rtl
+            if adj[i][n-j-1] == 1 and digitI == digitJ:  # If 2 adjacent verts have equal colorings. n-1 b/c of rtl
                 return False
-            copy = copy // 3
 
-        col = col % (pow(3, n - i - 1))
+            copy = copy // k
+
+        col = col % (pow(k, n - i - 1))
 
     return True
-
-def increment(col, inc, k):
-    if inc == 0:
-        return col
-
-    digit = col % 10 # = 2
-    digit += inc # = 3
-
-    inc = int( digit / k )
-    col = int( col / 10 )
-
-    col = increment(col, inc, k)
-
-    col *= 10
-    col += digit % k
-
-    return col
 
 def getColors(f, n, k):
     col = 0
@@ -117,16 +101,41 @@ def getColors(f, n, k):
 
     return colors
 
+def commutes(g1, gens, adj):
+
+    for g2 in gens:
+        if adj[g2][g1] == 1:
+            return False
+
+    return True
+
+def getNeighbors(col, adj, k, n):
+    copy = col
+    gens = []
+    for i in range(n):
+        v = copy % pow(k, i+1) # v is a place value in col
+        copy1 = col - v
+        for j in range(k):
+            if copy1 != col and is_valid(copy1, adj, n, k):
+                gens.append(i)
+                # print(copy1) Verify that the decision is being made for the right coloring
+                break
+            copy1 += pow(k, i)  # keep adding 1 to the place and check if the result is a valid coloring
+        copy -= v
+    return gens
 
 f = open("samplegraph.txt", "r")
 n = int(f.readline())
 k = int(f.readline())
 
-#print(is_valid(101, f, n))
+adj = [[0, 1, 0], [1, 0, 1], [0, 1, 0]]
+g5 = getGens(20, adj, k, n)
 
-colors = getColors(f, n, k)
-print(colors)
-print(len(colors))
+print(commutes(1, g5, adj))
+
+#colors = getColors(f, n, k)
+#print(colors)
+#print(len(colors))
 
 #print( increment(0, 1, 3) )
 
