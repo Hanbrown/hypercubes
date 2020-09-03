@@ -19,7 +19,7 @@ def is_adjacent(n, k, v1, v2):
         v2 = v2 // k
     return True
 
-# return whether a coloring col is a proper (valid) coloring of the graph in file f
+# return whether a coloring col is a proper (valid) coloring of the graph in adjacency matrix
 def is_valid(col, adj, n, k):
     # f.seek(6) # Set file pointer to first line of adjacency matrix
     for i in range(n):
@@ -100,4 +100,3 @@ for i in range(nk):  # generate edges between colorings by brute force
             cg.add_edge(colorings[i], colorings[j], color='red', value=4)
 
 cg.show("samplecolgraphvis.html")
-

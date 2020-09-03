@@ -1,4 +1,5 @@
 # A file for messing around with various code ideas
+import math
 
 """
 
@@ -101,9 +102,10 @@ def getColors(f, n, k):
 
     return colors
 
-def commutes(g1, gens, adj):
+def commutes(g1, neighbors, adj, k):
 
-    for g2 in gens:
+    for nbr in neighbors:
+        g2 = int(math.log(nbr, k))
         if adj[g2][g1] == 1:
             return False
 
@@ -117,21 +119,40 @@ def getNeighbors(col, adj, k, n):
         copy1 = col - v
         for j in range(k):
             if copy1 != col and is_valid(copy1, adj, n, k):
-                gens.append(i)
+                #gens.append(i)
+                gens.append(copy1)
                 # print(copy1) Verify that the decision is being made for the right coloring
                 break
             copy1 += pow(k, i)  # keep adding 1 to the place and check if the result is a valid coloring
         copy -= v
     return gens
 
+# Function runs once.
+# Start with an empty set "faces"
+# Make 2 function calls:
+# 	1 where you include g1 in faces
+# 		can we include g1? if faces has length 0, then yes
+# 			else, check if g1 commutes with all other generators in faces
+# 				if yes, add g1 to faces, and do the function call on the next generator
+# 	1 where you do not include g1
+# 		run function on next generator (neighbor)
+# 	combine these results in an array
+# 	return the array
+
+def shadeFaces(neighbors, i, n):
+    if len(faces) == 0:
+        faces.append()
+
+
+
 f = open("samplegraph.txt", "r")
 n = int(f.readline())
 k = int(f.readline())
 
 adj = [[0, 1, 0], [1, 0, 1], [0, 1, 0]]
-g5 = getGens(20, adj, k, n)
+g5 = getNeighbors(20, adj, k, n)
 
-print(commutes(1, g5, adj))
+print(commutes(1, g5, adj, k))
 
 #colors = getColors(f, n, k)
 #print(colors)
