@@ -4,10 +4,11 @@
 # from pyvis.network import Network
 from pyvis import network as net
 import networkx as nx
+import math
 
 
 # return whether two coloring values differ on exactly one vertex
-def is_adjacent(n, k, v1, v2):
+def is_adjacent(v1, v2):
     same = True
     for i in range(n):  # check each digit for sameness
         digitdif = v1 % k - v2 % k
@@ -19,8 +20,9 @@ def is_adjacent(n, k, v1, v2):
         v2 = v2 // k
     return True
 
+
 # return whether a coloring col is a proper (valid) coloring of the graph in adjacency matrix
-def is_valid(col, adj, n, k):
+def is_valid(col):
     # f.seek(6) # Set file pointer to first line of adjacency matrix
     for i in range(n):
 
@@ -38,24 +40,82 @@ def is_valid(col, adj, n, k):
 
     return True
 
+
 # return an array of proper colorings of the graph base
-def getColors(base, n, k):
+def getColors():
     col = 0
     maxCol = pow(k, n) - 1
     colors = []
 
     # check if col is valid coloring of base graph. Add to list if it is, then increment col and repeat
     while col <= maxCol:
-        if is_valid(col, base, n, k):
+        if is_valid(col):
             colors.append(col)
         col += 1
 
     return colors
 
+
 # TODO use brute-force to find faces in the graphs
-# def shadeFaces(g): # g is the graph whose faces we want to shade
-#
-#     return
+# Given that v is adjacent to final element in nbrs,
+# and all adjacent elements of nbrs are adjacent vertices in coloring graph,
+# check if all generators commute with each other
+def commutes(v, nbrs):
+    n = len(nbrs)
+    tN = int(math.log(abs(nbrs[n-1] - v), k))  # Find trace of generator between v and final element in nbrs
+    for i in range(1, len(nbrs)):
+        t1 = int(math.log( abs(nbrs[i] - nbrs[i-1]), k))  # Find trace between two adjacent elements in nbrs
+        if adj[t1][tN] == 1:
+            return False
+
+    return True
+
+
+def getNeighbors(col):
+    copy = col
+    gens = []
+    for i in range(n):
+        v = copy % pow(k, i + 1)  # v is a place value in col
+        copy1 = col - v
+        for j in range(k):
+            if copy1 != col and is_valid(copy1):
+                # gens.append(i)
+                gens.append(copy1)
+                # print(copy1) Verify that the decision is being made for the right coloring
+                break
+            copy1 += pow(k, i)  # keep adding 1 to the place and check if the result is a valid coloring
+        copy -= v
+    return gens
+
+
+# Precondition: i = 0; S is an array of length 1 containing v1; N has neighbors of v1
+def getGens(v1, i, S, N):
+    # Base case: we reach end of decision tree
+    if i == n:
+        SC = S.copy()  # These two lines may not be necessary, ultimately
+        del SC[0]
+        RS.append(SC)
+        return
+
+    getGens(v1, i+1, S, N)  # Skip existing generator and go left
+
+    nv1 = findNeighbor(v1, i, N)
+    if nv1 > -1 and commutes(nv1, S):  # commutes(i, S):
+        # Find neighbor with vertex i changed
+        S0 = S.copy()  # Copy created because otherwise, S is mutated in all stack frames
+        S0.append(nv1)
+        N = getNeighbors(nv1)
+        getGens(nv1, i+1, S0, N)
+
+    return
+
+
+def findNeighbor(v, t, N):
+    for v0 in N:
+        if int( math.log(abs(v - v0), k) ) == t:  # log base k of | v-v0 | == t:
+            return v0
+    return -1
+
 
 # *********************************************************************************** #
 # *****                           Main Program                               ******** #
@@ -64,15 +124,17 @@ f = open("samplegraph.txt", "r")
 
 # generate base graph
 bg = net.Network()
+global n, k, adj, RS
 n = int(f.readline())  # first line states number of vertices of base graph
 k = int(f.readline())  # second line states number of colors
-matrix = []
+adj = []
+RS = []
 
 # generate base graph and adjacency matrix
 for i in range(n):
     bg.add_node(i)
     neighbors = f.readline().split(" ")  # read a line of the adjacency matrix
-    matrix.append([])
+    adj.append([])
     for j in range(i):
         if int(neighbors[j]) > 0:
             bg.add_edge(i, j)
@@ -80,7 +142,7 @@ for i in range(n):
 
     # Add the current number to an adjacency matrix
     for j in range(n):
-        matrix[i].append( int(neighbors[j]) )
+        adj[i].append( int(neighbors[j]) )
 
 f.close()
 bg.show_buttons(filter_=['physics'])
@@ -88,7 +150,7 @@ bg.show("samplegraphvis.html")
 
 # generate coloring graph
 cg = net.Network()
-colorings = getColors(matrix, n, k)  # ************** getColors function call ******************* #
+colorings = getColors()  # ************** getColors function call ******************* #
 
 for coloring in colorings:  # add each coloring as a node in cg
     cg.add_node(coloring)
@@ -96,7 +158,13 @@ for coloring in colorings:  # add each coloring as a node in cg
 nk = len(colorings)
 for i in range(nk):  # generate edges between colorings by brute force
     for j in range(i):  # add edge for every adjacent previous coloring
-        if is_adjacent(n, k, colorings[i], colorings[j]):  # understand this!
+        if is_adjacent(colorings[i], colorings[j]):  # understand this!
             cg.add_edge(colorings[i], colorings[j], color='red', value=4)
 
 cg.show("samplecolgraphvis.html")
+
+v = colorings[0]
+set1 = [v]
+gV = getNeighbors(v)
+getGens(v, 0, set1, gV)
+print(RS)
