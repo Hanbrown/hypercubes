@@ -23,20 +23,20 @@ def is_adjacent(v1, v2):
 
 # return whether a coloring col is a proper (valid) coloring of the graph in adjacency matrix
 def is_valid(col):
-    # f.seek(6) # Set file pointer to first line of adjacency matrix
+    copyI = col
     for i in range(n):
 
-        copy = col  # Necessary for nested loop
+        copyJ = col  # Necessary for nested loop
 
-        digitI = col // (pow(k, n - i - 1))  # Read color from left to right
-        for j in range(n-i):
-            digitJ = copy % k  # We read color rtl
-            if adj[i][n-j-1] == 1 and digitI == digitJ:  # If 2 adjacent verts have equal colorings. n-1 b/c of rtl
+        digitI = copyI % k  # Read color rtl
+        for j in range(n):
+            digitJ = copyJ % k  # We read color rtl
+            if adj[i][j] == 1 and digitI == digitJ:  # If 2 adjacent verts have equal colorings. n-1 b/c of rtl
                 return False
 
-            copy = copy // k
+            copyJ = copyJ // k
 
-        col = col % (pow(k, n - i - 1))
+        copyI = copyI // k
 
     return True
 
@@ -56,7 +56,6 @@ def getColors():
     return colors
 
 
-# TODO use brute-force to find faces in the graphs
 # Given that v is adjacent to final element in nbrs,
 # and all adjacent elements of nbrs are adjacent vertices in coloring graph,
 # check if all generators commute with each other
