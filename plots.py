@@ -61,10 +61,10 @@ def getColors():
 # check if all generators commute with each other
 def commutes(v, nbrs):
     n = len(nbrs)
-    tN = int(math.log(abs(nbrs[n-1] - v), k))  # Find trace of generator between v and final element in nbrs
+    tn = int(math.log(abs(nbrs[0] - v), k))  # Find trace of generator between v and final element in nbrs
     for i in range(1, len(nbrs)):
         t1 = int(math.log( abs(nbrs[i] - nbrs[i-1]), k))  # Find trace between two adjacent elements in nbrs
-        if adj[t1][tN] == 1:
+        if adj[t1][tn] == 1:
             return False
 
     return True
@@ -87,6 +87,13 @@ def getNeighbors(col):
     return gens
 
 
+def findNeighbor(v, t, N):
+    for v0 in N:
+        if int( math.log(abs(v - v0), k) ) == t:  # log base k of | v-v0 | == t:
+            return v0
+    return -1
+
+
 # Precondition: i = 0; S is an array of length 1 containing v1; N has neighbors of v1
 def getGens(v1, i, S, N):
     # Base case: we reach end of decision tree
@@ -103,17 +110,9 @@ def getGens(v1, i, S, N):
         # Find neighbor with vertex i changed
         S0 = S.copy()  # Copy created because otherwise, S is mutated in all stack frames
         S0.append(nv1)
-        N = getNeighbors(nv1)
-        getGens(nv1, i+1, S0, N)
+        getGens(v1, i+1, S0, N)
 
     return
-
-
-def findNeighbor(v, t, N):
-    for v0 in N:
-        if int( math.log(abs(v - v0), k) ) == t:  # log base k of | v-v0 | == t:
-            return v0
-    return -1
 
 
 # *********************************************************************************** #
@@ -166,4 +165,5 @@ v = colorings[0]
 set1 = [v]
 gV = getNeighbors(v)
 getGens(v, 0, set1, gV)
+RS.sort(reverse=True, key=len)
 print(RS)
