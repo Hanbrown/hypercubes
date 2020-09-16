@@ -64,7 +64,7 @@ def commutes(v, nbrs):
     tn = int(math.log(abs(nbrs[0] - v), k))  # Find trace of generator between v and final element in nbrs
     for i in range(1, len(nbrs)):
         t1 = int(math.log( abs(nbrs[i] - nbrs[i-1]), k))  # Find trace between two adjacent elements in nbrs
-        if adj[t1][tn] == 1:
+        if adj[t1][tn] == 1 or t1 == tn:
             return False
 
     return True
@@ -78,10 +78,7 @@ def getNeighbors(col):
         copy1 = col - v
         for j in range(k):
             if copy1 != col and is_valid(copy1):
-                # gens.append(i)
                 gens.append(copy1)
-                # print(copy1) Verify that the decision is being made for the right coloring
-                break
             copy1 += pow(k, i)  # keep adding 1 to the place and check if the result is a valid coloring
         copy -= v
     return gens
@@ -97,7 +94,7 @@ def findNeighbor(v, t, N):
 # Precondition: i = 0; S is an array of length 1 containing v1; N has neighbors of v1
 def getGens(v1, i, S, N):
     # Base case: we reach end of decision tree
-    if i == n:
+    if i == len(N):
         SC = S.copy()  # These two lines may not be necessary, ultimately
         del SC[0]
         RS.append(SC)
@@ -105,7 +102,7 @@ def getGens(v1, i, S, N):
 
     getGens(v1, i+1, S, N)  # Skip existing generator and go left
 
-    nv1 = findNeighbor(v1, i, N)
+    nv1 = N[i]
     if nv1 > -1 and commutes(nv1, S):  # commutes(i, S):
         # Find neighbor with vertex i changed
         S0 = S.copy()  # Copy created because otherwise, S is mutated in all stack frames
@@ -161,9 +158,10 @@ for i in range(nk):  # generate edges between colorings by brute force
 
 cg.show("samplecolgraphvis.html")
 
-v = colorings[0]
+v = colorings[2]
 set1 = [v]
 gV = getNeighbors(v)
+print(gV)
 getGens(v, 0, set1, gV)
 RS.sort(reverse=True, key=len)
 print(RS)
