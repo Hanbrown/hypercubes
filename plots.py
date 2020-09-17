@@ -22,8 +22,9 @@ def is_adjacent(v1, v2):
 
 
 # return whether a coloring col is a proper (valid) coloring of the graph in adjacency matrix
+# This is done by verifying if col has 2 adjacent vertices with equal colors
 def is_valid(col):
-    copyI = col
+    copyI = col  # Since we iterate through col by modifying it, we make copies instead of modifying the original
     for i in range(n):
 
         copyJ = col  # Necessary for nested loop
@@ -31,7 +32,7 @@ def is_valid(col):
         digitI = copyI % k  # Read color rtl
         for j in range(n):
             digitJ = copyJ % k  # We read color rtl
-            if adj[i][j] == 1 and digitI == digitJ:  # If 2 adjacent verts have equal colorings. n-1 b/c of rtl
+            if adj[i][j] == 1 and digitI == digitJ:  # If 2 adjacent verts have equal colors, or if verts are the same
                 return False
 
             copyJ = copyJ // k
@@ -70,20 +71,22 @@ def commutes(v, nbrs):
     return True
 
 
+# Given a vertex col, find all its neighbors in the coloring graph
 def getNeighbors(col):
     copy = col
     gens = []
     for i in range(n):
         v = copy % pow(k, i + 1)  # v is a place value in col
-        copy1 = col - v
+        copy1 = col - v  # Set that place value to 0. We will iterate up from 0 to k-1
         for j in range(k):
             if copy1 != col and is_valid(copy1):
                 gens.append(copy1)
             copy1 += pow(k, i)  # keep adding 1 to the place and check if the result is a valid coloring
-        copy -= v
+        copy -= v  # We do not want smaller place values affecting our results in higher iterations
     return gens
 
 
+# Given a coloring v and a vertex t, find a neighbor of v in N that changes t
 def findNeighbor(v, t, N):
     for v0 in N:
         if int( math.log(abs(v - v0), k) ) == t:  # log base k of | v-v0 | == t:
@@ -91,6 +94,8 @@ def findNeighbor(v, t, N):
     return -1
 
 
+# Given a color v1 and its neighbors N, find a set of all possible generators (represented as neighboring vertices)
+# that make hypercubes.
 # Precondition: i = 0; S is an array of length 1 containing v1; N has neighbors of v1
 def getGens(v1, i, S, N):
     # Base case: we reach end of decision tree
